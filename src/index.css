@@ -1,3 +1,21 @@
+/* App.css */
+@import url('https://fonts.googleapis.com/css2?family=Jost&family=Marcellus&display=swap');
+
+.font-heading {
+  font-family: "Marcellus", Roboto, sans-serif;
+}
+
+.font-body {
+  font-family: "Jost", Roboto, sans-serif;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Marcellus", Roboto, sans-serif;
+}
+
+p {
+  font-family: "Jost", Roboto, sans-serif;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +28,66 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+/* NewArrivals.css */
+.image-holder-custom {
+  height: 260px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-holder-custom img {
+  object-fit: cover;
+  height: 260px;
+  width: 100%;
+  border-radius: 0.5rem;
+}
+
+/* Tablets */
+
+@media (max-width: 576px) {
+
+  .image-holder-custom img {
+    height: 500px;
+  }
+   .image-holder-custom {
+    height: 520px;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background-color: #f9f9f9;
+    display: block;
+    align-items: center;
+    justify-content: center;
+}
+}
+
+@media (min-width: 768px) {
+
+  .image-holder-custom img {
+    height: 496px;
+  }
+  .image-holder-custom {
+    height: 499px;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background-color: #f9f9f9;
+    display: block;
+    align-items: center;
+    justify-content: center;
+}
+}
+
+/* Desktop */
+@media (min-width: 992px) {
+  .image-holder-custom {
+    height: 360px;
+  }
+
+  .image-holder-custom img {
+    height: 360px;
+  }
 }
