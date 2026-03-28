@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
   UPLOAD_PROFILE_IMAGE: `${BASE_URL}/user/upload-profile-image/`,
   SUBMIT_PRODUCT_REVIEW: `${BASE_URL}/user/submit-product-review/`,
   GET_PRODUCT_REVIEWS: `${BASE_URL}/user/get-product-reviews/`,
+  FORGOT_PASSWORD_SEND: `${BASE_URL}/auth/user/forgot-password/send/`,
 };
 
 export default API_ENDPOINTS;

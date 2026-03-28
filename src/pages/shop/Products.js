@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faSolidHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faRegularHeart } from "@fortawesome/free-regular-svg-icons";
+import { faSlidersH, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import API_ENDPOINTS, { IMAGE_BASE_URL } from "../../api/apiConfig";
-import "../../assets/custom.css";
-import "../../assets/products.css";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useUser } from "../../context/UserContext";
+import "../../assets/products.css";
 
 const Products = () => {
   const { subcategory } = useParams();
@@ -23,28 +22,18 @@ const Products = () => {
     total_count: 0,
     total_pages: 0,
     has_next: false,
-    has_previous: false
+    has_previous: false,
   });
   const token = localStorage.getItem("authToken");
 
   const fetchProducts = async (page = 1, perPage = 12) => {
     setLoading(true);
     setError("");
-    
-    let body = {
-      page: page,
-      per_page: perPage
-    };
-
-    if (subcategory) {
-      body.sc_slug = subcategory;
-      console.log("Fetching products for subcategory:", subcategory);
-    }
+    let body = { page, per_page: perPage };
+    if (subcategory) body.sc_slug = subcategory;
 
     try {
-      const headers = {
-        "Content-Type": "application/json",
-      };
+      const headers = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
       const response = await fetch(API_ENDPOINTS.PRODUCTSBYPAGE, {
@@ -52,32 +41,27 @@ const Products = () => {
         headers,
         body: JSON.stringify(body),
       });
-
       const data = await response.json();
 
       if (response.ok && data.status && Array.isArray(data.data)) {
         setProducts(data.data);
-        
-        if (data.pagination) {
-          setPagination(data.pagination);
-        } else {
-          setPagination({
+        setPagination(
+          data.pagination || {
             current_page: page,
             per_page: perPage,
             total_count: data.data.length,
             total_pages: 1,
             has_next: false,
-            has_previous: false
-          });
-        }
+            has_previous: false,
+          }
+        );
       } else {
         setProducts([]);
         setError(data.message || "Failed to fetch products.");
       }
     } catch (err) {
-      console.error("Fetch error:", err);
       setProducts([]);
-      setError(`An error occurred while fetching products: ${err.message}`);
+      setError(`An error occurred: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -89,25 +73,16 @@ const Products = () => {
 
   const handleWishlistToggle = async (productId) => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      };
+      const headers = { "Content-Type": "application/json", Accept: "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
-
       const response = await fetch(API_ENDPOINTS.WISHLISTTOGGLE, {
         method: "POST",
         headers,
         body: JSON.stringify({ product_id: productId }),
       });
-
       const data = await response.json();
-
-      if (response.ok) {
-        fetchProducts(pagination.current_page, pagination.per_page);
-      } else {
-        alert(data.message || "Failed to update wishlist.");
-      }
+      if (response.ok) fetchProducts(pagination.current_page, pagination.per_page);
+      else alert(data.message || "Failed to update wishlist.");
     } catch (err) {
       console.error("Wishlist toggle error:", err);
     }
@@ -116,7 +91,7 @@ const Products = () => {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.total_pages) {
       fetchProducts(newPage, pagination.per_page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -126,213 +101,220 @@ const Products = () => {
     return new Date(b.created_at) - new Date(a.created_at);
   });
 
+  const renderPageNumbers = () => {
+    const { current_page, total_pages } = pagination;
+    const items = [];
+    for (let i = 1; i <= total_pages; i++) {
+      const near =
+        i === 1 ||
+        i === total_pages ||
+        (i >= current_page - 1 && i <= current_page + 1);
+      const ellipsis = i === current_page - 2 || i === current_page + 2;
+      if (near) {
+        items.push(
+          <button
+            key={i}
+            className={`lux-page-num ${current_page === i ? "active" : ""}`}
+            onClick={() => handlePageChange(i)}
+          >
+            {i}
+          </button>
+        );
+      } else if (ellipsis) {
+        items.push(
+          <span key={`e-${i}`} className="lux-ellipsis">
+            ···
+          </span>
+        );
+      }
+    }
+    return items;
+  };
+
   return (
-    <main>
-      <section className="page-header bg-light py-5" style={{ marginTop: '50px' }}>
-        <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <h1 className="text-center">Products</h1>
+    <main className="lux-main">
+      {/* ── PAGE HEADER ── */}
+      <section className="lux-hero">
+        <div className="lux-hero-bg" aria-hidden="true">
+          <span className="lux-hero-circle lux-hero-circle--1" />
+          <span className="lux-hero-circle lux-hero-circle--2" />
+        </div>
+        <div className="lux-container">
+          <p className="lux-hero-eyebrow">Collection</p>
+          <h1 className="lux-hero-title">
+            {subcategory
+              ? subcategory.replace(/-/g, " ")
+              : "Our Products"}
+          </h1>
+          <div className="lux-hero-rule" aria-hidden="true" />
+        </div>
+      </section>
+
+      {/* ── TOOLBAR ── */}
+      <section className="lux-toolbar-wrap">
+        <div className="lux-container">
+          <div className="lux-toolbar">
+            <p className="lux-count">
+              {pagination.total_count > 0 ? (
+                <>
+                  <span className="lux-count-num">
+                    {(pagination.current_page - 1) * pagination.per_page + 1}–
+                    {Math.min(
+                      pagination.current_page * pagination.per_page,
+                      pagination.total_count
+                    )}
+                  </span>
+                  &nbsp;of {pagination.total_count} pieces
+                </>
+              ) : (
+                "No products"
+              )}
+            </p>
+
+            <div className="lux-sort-wrap">
+              <FontAwesomeIcon icon={faSlidersH} className="lux-sort-icon" />
+              <select
+                className="lux-sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="newest">Newest</option>
+                <option value="price-low">Price: Low → High</option>
+                <option value="price-high">Price: High → Low</option>
+              </select>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="products-wrapper">
-        <div className="container">
-          <div
-            className="products-header d-flex flex-wrap justify-content-between align-items-center mb-4"
-            data-aos="zoom-out"
-          >
-            <button
-              className="btn btn-filter d-lg-none mb-2"
-              data-bs-toggle="offcanvas"
-              data-bs-target="#filterOffcanvas"
-            >
-              <FontAwesomeIcon icon={faFilter} className="me-2" />
-              Filter
-            </button>
-            <div className="showing-products text-secondary mb-2">
-              Showing{" "}
-              <span className="fw-medium text-dark">
-                {pagination.total_count > 0 
-                  ? `${(pagination.current_page - 1) * pagination.per_page + 1}-${Math.min(pagination.current_page * pagination.per_page, pagination.total_count)} of ${pagination.total_count}`
-                  : '0'
-                }
-              </span>{" "}
-              products
-            </div>
-            <div className="products-actions d-flex align-items-center mb-2">
-              <select
-                className="form-select me-3 bg-light border-0"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="newest">Newest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-            </div>
-          </div>
-
+      {/* ── PRODUCT GRID ── */}
+      <section className="lux-catalog">
+        <div className="lux-container">
           {loading ? (
-            <LoadingSpinner />
+            <div className="lux-loading">
+              <LoadingSpinner />
+            </div>
           ) : error ? (
-            <div className="alert alert-danger text-center">{error}</div>
+            <div className="lux-error">{error}</div>
+          ) : sortedProducts.length === 0 ? (
+            <div className="lux-empty">
+              <span className="lux-empty-icon">∅</span>
+              <p>No products found.</p>
+            </div>
           ) : (
-            <>
-              <div className="row g-4">
-                {sortedProducts.length > 0 ? (
-                  sortedProducts.map((product) => (
-                    <div
-                      key={product.p_id}
-                      className="col-12 col-sm-6 col-md-4 col-lg-3"
+            <div className="lux-grid">
+              {sortedProducts.map((product, idx) => (
+                <article
+                  key={product.p_id}
+                  className="lux-card"
+                  style={{ animationDelay: `${idx * 0.05}s` }}
+                >
+                  {/* Image */}
+                  <a
+                    href={`/product/${product.p_slug}`}
+                    className="lux-card-img-link"
+                  >
+                    <div className="lux-card-img-wrap">
+                      <img
+                        src={
+                          product.images?.[0]?.startsWith("http")
+                            ? product.images[0]
+                            : `${IMAGE_BASE_URL}${product.images?.[0]}`
+                        }
+                        alt={product.p_name}
+                        className="lux-card-img"
+                        loading="lazy"
+                      />
+                      {product.discount_percentage > 0 && (
+                        <span className="lux-badge">
+                          −{product.discount_percentage}%
+                        </span>
+                      )}
+                    </div>
+                  </a>
+
+                  {/* Wishlist */}
+                  {token && (
+                    <button
+                      className={`lux-wish ${product.is_wishlisted ? "lux-wish--active" : ""}`}
+                      onClick={() => handleWishlistToggle(product.p_id)}
+                      aria-label={
+                        product.is_wishlisted
+                          ? "Remove from wishlist"
+                          : "Add to wishlist"
+                      }
                     >
-                      <div className="product-card h-100 d-flex flex-column">
-                        <div className="product-image-wrapper position-relative">
-                          <a href={`/product/${product.p_slug}`}>
-                            <img
-                              src={
-                                product.images?.[0]?.startsWith("http")
-                                  ? product.images[0]
-                                  : `${IMAGE_BASE_URL}${product.images?.[0]}`
-                              }
-                              alt={product.p_name}
-                              className="product-image-fix"
-                            />
-                          </a>
-                          {token && (
-                            <div
-                              className="wishlist-icon"
-                              onClick={() => handleWishlistToggle(product.p_id)}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <FontAwesomeIcon
-                                icon={
-                                  product.is_wishlisted
-                                    ? faSolidHeart
-                                    : faRegularHeart
-                                }
-                                className="icon-heart"
-                                style={{
-                                  color: product.is_wishlisted
-                                    ? "red"
-                                    : "inherit",
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
+                      <FontAwesomeIcon
+                        icon={product.is_wishlisted ? faSolidHeart : faRegularHeart}
+                      />
+                    </button>
+                  )}
 
-                        <div className="product-name">{product.p_name}</div>
+                  {/* Info */}
+                  <div className="lux-card-body">
+                    <a
+                      href={`/product/${product.p_slug}`}
+                      className="lux-card-name"
+                    >
+                      {product.p_name}
+                    </a>
 
-                        <div className="price-section mt-auto">
-                          {token && user?.created_by ? (
-                            <div className="price-values d-flex align-items-center">
-                              <span className="price-now">
-                                ₹
-                                {Math.round(
-                                  (parseFloat(product.p_price) || 0) *
-                                    (1 -
-                                      (parseFloat(
-                                        product.discount_percentage
-                                      ) || 0) /
-                                        100)
-                                )}
-                              </span>
-                              {product.discount_percentage > 0 && (
-                                <>
-                                  <span className="price-original">
-                                    ₹{parseFloat(product.p_price) || 0}
-                                  </span>
-                                  <span className="price-off">
-                                    {product.discount_percentage}% OFF
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="price-now">
+                    <div className="lux-card-price">
+                      {token && user?.created_by ? (
+                        <>
+                          <span className="lux-price-now">
+                            ₹
+                            {Math.round(
+                              (parseFloat(product.p_price) || 0) *
+                                (1 -
+                                  (parseFloat(product.discount_percentage) ||
+                                    0) /
+                                    100)
+                            )}
+                          </span>
+                          {product.discount_percentage > 0 && (
+                            <span className="lux-price-original">
                               ₹{parseFloat(product.p_price) || 0}
                             </span>
                           )}
-                        </div>
-                      </div>
+                        </>
+                      ) : (
+                        <span className="lux-price-now">
+                          ₹{parseFloat(product.p_price) || 0}
+                        </span>
+                      )}
                     </div>
-                  ))
-                ) : (
-                  <div className="col-12 text-center text-muted py-5">
-                    No products found.
                   </div>
-                )}
-              </div>
+                </article>
+              ))}
+            </div>
+          )}
 
-              {/* Pagination Controls */}
-              {pagination.total_pages > 1 && (
-                <div className="custom-pagination-wrapper">
-                  <nav aria-label="Product pagination">
-                    <ul className="custom-pagination">
-                      {/* Previous Button */}
-                      <li className={`custom-page-item ${!pagination.has_previous ? 'disabled' : ''}`}>
-                        <button
-                          className="custom-page-link"
-                          onClick={() => handlePageChange(pagination.current_page - 1)}
-                          disabled={!pagination.has_previous}
-                        >
-                          Previous
-                        </button>
-                      </li>
+          {/* ── PAGINATION ── */}
+          {!loading && pagination.total_pages > 1 && (
+            <div className="lux-pag-wrap">
+              <nav className="lux-pag" aria-label="Product pagination">
+                <button
+                  className="lux-pag-nav"
+                  onClick={() => handlePageChange(pagination.current_page - 1)}
+                  disabled={!pagination.has_previous}
+                  aria-label="Previous page"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} />
+                </button>
 
-                      {/* Page Numbers */}
-                      {[...Array(pagination.total_pages)].map((_, index) => {
-                        const pageNum = index + 1;
-                        
-                        if (
-                          pageNum === 1 ||
-                          pageNum === pagination.total_pages ||
-                          (pageNum >= pagination.current_page - 1 && pageNum <= pagination.current_page + 1)
-                        ) {
-                          return (
-                            <li
-                              key={pageNum}
-                              className={`custom-page-item ${pagination.current_page === pageNum ? 'active' : ''}`}
-                            >
-                              <button
-                                className="custom-page-link"
-                                onClick={() => handlePageChange(pageNum)}
-                              >
-                                {pageNum}
-                              </button>
-                            </li>
-                          );
-                        } else if (
-                          pageNum === pagination.current_page - 2 ||
-                          pageNum === pagination.current_page + 2
-                        ) {
-                          return (
-                            <li key={pageNum} className="custom-page-item disabled">
-                              <span className="custom-page-link">...</span>
-                            </li>
-                          );
-                        }
-                        return null;
-                      })}
+                <div className="lux-pag-nums">{renderPageNumbers()}</div>
 
-                      {/* Next Button */}
-                      <li className={`custom-page-item ${!pagination.has_next ? 'disabled' : ''}`}>
-                        <button
-                          className="custom-page-link"
-                          onClick={() => handlePageChange(pagination.current_page + 1)}
-                          disabled={!pagination.has_next}
-                        >
-                          Next
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              )}
-            </>
+                <button
+                  className="lux-pag-nav"
+                  onClick={() => handlePageChange(pagination.current_page + 1)}
+                  disabled={!pagination.has_next}
+                  aria-label="Next page"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </button>
+              </nav>
+            </div>
           )}
         </div>
       </section>

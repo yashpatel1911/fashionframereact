@@ -4,16 +4,17 @@ import CartBannerHeader from "./CartBannerHeader";
 import Checkout from "./Checkout";
 import { Modal } from "react-bootstrap";
 import { FaPlusCircle, FaEdit } from "react-icons/fa";
-import API_ENDPOINTS from "../../api/apiConfig"; // <-- Import API endpoints
+import API_ENDPOINTS from "../../api/apiConfig";
+import '../../assets/css/lux-cart.css';
 
 const CartAddressSelection = () => {
-  const [addresses, setAddresses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [addresses, setAddresses]           = useState([]);
+  const [loading, setLoading]               = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [error, setError] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editAddress, setEditAddress] = useState(null); // Address object to edit
+  const [error, setError]                   = useState("");
+  const [showAddModal, setShowAddModal]     = useState(false);
+  const [showEditModal, setShowEditModal]   = useState(false);
+  const [editAddress, setEditAddress]       = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,46 +32,43 @@ const CartAddressSelection = () => {
         setLoading(false);
         return;
       }
-      const res = await fetch(
-        API_ENDPOINTS.GET_USER_ADDRESS, // <-- Use API endpoint from config
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await fetch(API_ENDPOINTS.GET_USER_ADDRESS, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       if (!res.ok) throw new Error("Failed to fetch addresses");
       const data = await res.json();
-      if (Array.isArray(data.addresses)) {
+      if (Array.isArray(data.addresses) && data.addresses.length > 0) {
         setAddresses(data.addresses);
-        setSelectedAddressId(null); // No address selected by default
+        // Auto-select the last address by default
+        const lastAddr = data.addresses[data.addresses.length - 1];
+        setSelectedAddressId(lastAddr.address_id || lastAddr.id);
       } else {
         setAddresses([]);
       }
-    } catch (e) {
+    } catch {
       setError("Could not load addresses.");
     }
     setLoading(false);
   };
 
-  const handleSelect = (id) => {
-    setSelectedAddressId(id);
-  };
+  const handleSelect = (id) => setSelectedAddressId(id);
 
   const handleContinue = () => {
-    const selected = addresses.find(addr => (addr.id || addr.address_id) === selectedAddressId);
+    const selected = addresses.find(
+      (addr) => (addr.id || addr.address_id) === selectedAddressId
+    );
     if (selected) {
       localStorage.setItem("selectedAddress", JSON.stringify(selected));
       navigate("/payment-method");
     }
   };
 
-  // Add Address Modal
-  const handleShowAddModal = () => setShowAddModal(true);
+  const handleShowAddModal  = () => setShowAddModal(true);
   const handleCloseAddModal = () => setShowAddModal(false);
 
-  // Edit Address Modal
   const handleShowEditModal = (address) => {
     setEditAddress(address);
     setShowEditModal(true);
@@ -80,128 +78,125 @@ const CartAddressSelection = () => {
     setShowEditModal(false);
   };
 
-  // When a new address is added or updated, refresh the address list
   const handleAddressChanged = () => {
     setShowAddModal(false);
     setShowEditModal(false);
     setEditAddress(null);
-    setTimeout(() => {
-      fetchAddresses();
-    }, 1000);
+    setTimeout(() => fetchAddresses(), 1000);
   };
 
   return (
-    <main>
+    <main className="lux-address-page">
       <CartBannerHeader currentStep={2} />
-      <section className="page-header bg-light mb-5">
+
+      <div className="lux-page-header">
+        <p className="lux-page-subtitle">Step 2 of 3</p>
+        <h2 className="lux-page-title">Delivery Address</h2>
+      </div>
+
+      <section className="lux-section">
         <div className="container">
-          <h2 className="page-title text-center mb-0 font-heading">Select Address</h2>
-        </div>
-      </section>
-      <section className="cart-content pb-5">
-        <div className="container">
-          <div className="d-flex justify-content-end mb-3">
-            <button
-              className="btn btn-link d-flex align-items-center"
-              style={{ fontSize: 18, textDecoration: "none" }}
-              onClick={handleShowAddModal}
-            >
-              <FaPlusCircle style={{ marginRight: 6, color: "#222" }} />
-              Add New Address
-            </button>
-          </div>
-          {loading ? (
-            <div className="text-center py-5">Loading addresses...</div>
-          ) : error ? (
-            <div className="text-center text-danger py-5">{error}</div>
-          ) : addresses.length === 0 ? (
-            <div className="text-center py-5">
-              <h2 className="h5 mb-4">No saved addresses found.</h2>
-              <button
-                className="btn btn-dark"
-                onClick={handleShowAddModal}
-              >
-                Add New Address
-              </button>
-            </div>
-          ) : (
-            <div className="row justify-content-center">
-              <div className="col-lg-8">
-                <div className="address-list mb-4">
-                  {addresses.map((addr, idx) => {
-                    // Use address_id if present, else id, else fallback to idx
-                    const key = addr.address_id ? `address-${addr.address_id}` : (addr.id ? `address-${addr.id}` : `address-${idx}`);
-                    const id = addr.address_id || addr.id;
-                    return (
-                      <div
-                        key={key}
-                        className={`address-card border rounded-3 p-4 mb-3 ${selectedAddressId === id ? "border-dark bg-light" : ""}`}
-                        style={{ cursor: "pointer", position: "relative" }}
-                        onClick={() => handleSelect(id)}
-                      >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div>
-                            <div className="fw-bold font-heading">{addr.full_name}</div>
-                            <div className="text-muted small font-body">{addr.contact_no}</div>
-                            <div className="font-body">{addr.address_line}</div>
-                            <div className="font-body">
-                              {(addr.city || addr.city_name)}, {(addr.state || addr.state_name)} - {addr.postal_code}
+          <div className="row justify-content-center">
+            <div className="col-lg-7 col-md-9">
+
+              <div className="d-flex justify-content-end">
+                <button className="lux-add-btn" onClick={handleShowAddModal}>
+                  <FaPlusCircle />
+                  Add New Address
+                </button>
+              </div>
+
+              {loading ? (
+                <div className="lux-loading">Loading your addresses</div>
+              ) : error ? (
+                <div className="text-center py-5" style={{ color: "#c0392b", fontSize: "0.85rem", letterSpacing: "0.05em" }}>
+                  {error}
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="lux-empty">
+                  <div className="lux-empty-icon">◻</div>
+                  <h3 className="lux-empty-title">No saved addresses found</h3>
+                  <button className="lux-btn-primary" onClick={handleShowAddModal}>
+                    Add Your First Address
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="address-list mb-2">
+                    {addresses.map((addr, idx) => {
+                      const id         = addr.address_id || addr.id;
+                      const key        = id ? `address-${id}` : `address-${idx}`;
+                      const isSelected = selectedAddressId === id;
+
+                      return (
+                        <div
+                          key={key}
+                          className={`lux-address-card ${isSelected ? "selected" : ""}`}
+                          onClick={() => handleSelect(id)}
+                        >
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div style={{ flex: 1 }}>
+                              <div className="lux-addr-name">{addr.full_name}</div>
+                              <div className="lux-addr-phone">{addr.contact_no}</div>
+                              <div className="lux-addr-line">
+                                {addr.address_line}<br />
+                                {(addr.city || addr.city_name)}, {(addr.state || addr.state_name)} — {addr.postal_code}
+                              </div>
+                              {addr.address_type && (
+                                <span className="lux-addr-type">{addr.address_type}</span>
+                              )}
                             </div>
-                            <div className="text-muted small font-body">
-                              {addr.address_type ? addr.address_type.toUpperCase() : ""}
-                              {/* Removed Default Shipping badge */}
+                            <div className="d-flex align-items-center gap-2" style={{ marginLeft: 20, paddingTop: 2 }}>
+                              <button
+                                className="lux-edit-btn"
+                                onClick={(e) => { e.stopPropagation(); handleShowEditModal(addr); }}
+                                title="Edit Address"
+                              >
+                                <FaEdit />
+                              </button>
+                              <input
+                                type="radio"
+                                className="lux-radio"
+                                checked={isSelected}
+                                onChange={() => handleSelect(id)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
                             </div>
-                          </div>
-                          <div className="d-flex align-items-center gap-2 font-body">
-                            <input
-                              type="radio"
-                              checked={selectedAddressId === id}
-                              onChange={() => handleSelect(id)}
-                              onClick={e => e.stopPropagation()}
-                            />
-                            <button
-                              className="btn btn-sm btn-outline-secondary"
-                              style={{ marginLeft: 8 }}
-                              onClick={e => {
-                                e.stopPropagation();
-                                handleShowEditModal(addr);
-                              }}
-                              title="Edit Address"
-                            >
-                              <FaEdit />
-                            </button>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="d-flex gap-2">
-                  <button
-                    className="btn btn-outline-dark font-body"
-                    onClick={() => navigate("/cart")}
-                  >
-                    Back to Cart
-                  </button>
-                  <button
-                    className="btn btn-dark font-body"
-                    disabled={!selectedAddressId}
-                    onClick={handleContinue}
-                  >
-                    Continue to Payment
-                  </button>
-                </div>
-              </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="lux-divider" />
+
+                  <div className="lux-actions">
+                    <button className="lux-btn-secondary" onClick={() => navigate("/cart")}>
+                      ← Back to Cart
+                    </button>
+                    <button
+                      className="lux-btn-primary"
+                      disabled={!selectedAddressId}
+                      onClick={handleContinue}
+                    >
+                      Continue to Payment
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </section>
-      {/* Modal for Add New Address */}
+
+      {/* Add Address Modal */}
       <Modal show={showAddModal} onHide={handleCloseAddModal} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Add New Address</Modal.Title>
+        <Modal.Header closeButton style={{ borderBottom: "1px solid #ece8e1" }}>
+          <Modal.Title style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, fontSize: "1.5rem", letterSpacing: "0.04em" }}>
+            Add New Address
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ background: "#fafaf8" }}>
           <Checkout
             addressOnly={true}
             onAddressAdded={handleAddressChanged}
@@ -209,18 +204,20 @@ const CartAddressSelection = () => {
           />
         </Modal.Body>
       </Modal>
-      {/* Modal for Edit Address */}
+
+      {/* Edit Address Modal */}
       <Modal show={showEditModal} onHide={handleCloseEditModal} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Address</Modal.Title>
+        <Modal.Header closeButton style={{ borderBottom: "1px solid #ece8e1" }}>
+          <Modal.Title style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, fontSize: "1.5rem", letterSpacing: "0.04em" }}>
+            Edit Address
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ background: "#fafaf8" }}>
           <Checkout
             addressOnly={true}
             editAddress={editAddress}
             onAddressAdded={handleAddressChanged}
             onCancel={handleCloseEditModal}
-            // Pass a key to force remount when switching addresses
             key={editAddress ? editAddress.address_id || editAddress.id : "new"}
           />
         </Modal.Body>
