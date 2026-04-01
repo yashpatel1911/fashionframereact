@@ -39,6 +39,19 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Marcellus&display=swap"
     rel="stylesheet">
+    <script>
+      (function() {
+        var isHome = window.location.pathname === '/';
+        if (isHome) {
+          document.documentElement.style.setProperty('padding-top', '0', 'important');
+          document.body && document.body.style.setProperty('padding-top', '0', 'important');
+          document.documentElement.classList.add('home-page');
+        } else {
+          document.documentElement.style.setProperty('padding-top', '0', 'important');
+          document.body && document.body.style.setProperty('padding-top', '64px', 'important');
+        }
+      })();
+    </script>
 </head>
 
 <body>

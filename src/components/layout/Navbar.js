@@ -1,22 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart, faHeart, faUser, faSignOutAlt, faBars, faTimes, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faShoppingCart, faHeart, faUser, faSignOutAlt, faBars, faTimes, faChevronDown, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import Registration from "../../pages/auth/Registration";
 import Login from "../../pages/auth/Login";
 import API_ENDPOINTS from "../../api/apiConfig";
-import '../../assets/custom.css';
 import { useUser } from "../../context/UserContext";
+import '../../assets/css/navbar.css';
 
 const getAccessToken = () => localStorage.getItem('authToken');
 
-// Force black text style - will override everything
-const FORCE_BLACK = {
-  color: '#000000 !important',
-  WebkitTextFillColor: '#000000',
-  textShadow: 'none',
-  opacity: 1
-};
+// Run immediately when module loads — before first render
+// This prevents the white flash caused by useEffect running after paint
+(function applyBodyOffset() {
+  const isHome = window.location.pathname === '/';
+  if (isHome) {
+    document.documentElement.classList.add('home-page');
+    document.body.style.setProperty('padding-top', '0px', 'important');
+    document.body.style.setProperty('margin-top', '0px', 'important');
+  } else {
+    document.documentElement.classList.remove('home-page');
+    document.body.style.setProperty('padding-top', '64px', 'important');
+    document.body.style.setProperty('margin-top', '0px', 'important');
+  }
+})();
 
 const Navbar = () => {
   const [showRegistration, setShowRegistration] = useState(false);
@@ -29,60 +36,66 @@ const Navbar = () => {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const { user } = useUser();
   const [scrolled, setScrolled] = useState(false);
-  
-  const accountDropdownRef = useRef(null);
 
+  const accountDropdownRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
-
   const isHomePage = location.pathname === '/';
 
+  /* ── Homepage: remove body top offset so hero sits behind transparent navbar ── */
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+    if (isHomePage) {
+      document.body.style.setProperty('padding-top', '0px', 'important');
+      document.body.style.setProperty('margin-top', '0px', 'important');
+      document.body.classList.add('home-page');
+    } else {
+      document.body.style.setProperty('padding-top', '64px', 'important');
+      document.body.style.setProperty('margin-top', '0px', 'important');
+      document.body.classList.remove('home-page');
+    }
+    return () => {
+      document.body.style.removeProperty('padding-top');
+      document.body.style.removeProperty('margin-top');
+      document.body.classList.remove('home-page');
     };
+  }, [isHomePage]);
+
+  /* ── Scroll ── */
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /* ── Fetch categories ── */
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const token = getAccessToken();
-        const headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        };
+        const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const response = await fetch(API_ENDPOINTS.GET_CATEGORY_SUBCATEGORY, {
-          method: 'POST',
-          headers,
-        });
-
+        const response = await fetch(API_ENDPOINTS.GET_CATEGORY_SUBCATEGORY, { method: 'POST', headers });
         const data = await response.json();
-        if (response.ok && Array.isArray(data.data)) {
-          setCategoryData(data.data);
-        } else {
-          setCategoryData([]);
-        }
-      } catch {
-        setCategoryData([]);
-      }
+        setCategoryData(response.ok && Array.isArray(data.data) ? data.data : []);
+      } catch { setCategoryData([]); }
     };
     fetchCategories();
   }, []);
 
+  /* ── Cart count ── */
   const updateCartCount = () => {
     try {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-      setCartCount(count);
-    } catch {
-      setCartCount(0);
-    }
+      setCartCount(cart.reduce((sum, item) => sum + (item.quantity || 1), 0));
+    } catch { setCartCount(0); }
   };
+  useEffect(() => {
+    updateCartCount();
+    window.addEventListener('cartUpdated', updateCartCount);
+    return () => window.removeEventListener('cartUpdated', updateCartCount);
+  }, []);
 
+  /* ── Reset on route change ── */
   useEffect(() => {
     setShowRegistration(false);
     setShowLogin(false);
@@ -92,92 +105,27 @@ const Navbar = () => {
     setIsAccountDropdownOpen(false);
   }, [location]);
 
+  /* ── Mobile body lock ── */
   useEffect(() => {
-    updateCartCount();
-    window.addEventListener('cartUpdated', updateCartCount);
-    return () => window.removeEventListener('cartUpdated', updateCartCount);
-  }, []);
-
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.classList.add('menu-open');
-    } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.position = 'static';
-      document.body.style.width = 'auto';
-      document.body.classList.remove('menu-open');
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.position = 'static';
-      document.body.style.width = 'auto';
-      document.body.classList.remove('menu-open');
-    };
+    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [isMenuOpen]);
 
+  /* ── Outside click for account dropdown ── */
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target)) {
+    const handler = (e) => {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(e.target))
         setIsAccountDropdownOpen(false);
-      }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const switchToLogin = () => {
-    setShowRegistration(false);
-    setShowLogin(true);
-  };
+  const closeMenu = () => { setIsMenuOpen(false); setIsCategoryOpen(false); };
 
-  const switchToRegistration = () => {
-    setShowLogin(false);
-    setShowRegistration(true);
-  };
-
-  const handleMenuToggle = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-    setIsCategoryOpen(false);
-  };
-
-  const toggleCategory = () => {
-    setIsCategoryOpen(!isCategoryOpen);
-  };
-
-  const toggleAccountDropdown = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsAccountDropdownOpen(!isAccountDropdownOpen);
-  };
-
-  const handleProfileClick = (e) => {
-    e.preventDefault();
-    setIsAccountDropdownOpen(false);
-    closeMenu();
-    navigate('/profile');
-  };
-
-  const handleWishlistClick = (e) => {
-    e.preventDefault();
-    setIsAccountDropdownOpen(false);
-    closeMenu();
-    navigate('/wishlist');
-  };
-
-  const handleOrderHistoryClick = (e) => {
-    e.preventDefault();
-    setIsAccountDropdownOpen(false);
-    closeMenu();
-    navigate('/order-history');
-  };
+  const handleProfileClick      = () => { setIsAccountDropdownOpen(false); closeMenu(); navigate('/profile'); };
+  const handleWishlistClick     = () => { setIsAccountDropdownOpen(false); closeMenu(); navigate('/wishlist'); };
+  const handleOrderHistoryClick = () => { setIsAccountDropdownOpen(false); closeMenu(); navigate('/order-history'); };
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -192,302 +140,227 @@ const Navbar = () => {
     window.location.reload();
   };
 
-  const getNavbarClasses = () => {
-    let classes = 'navbar navbar-expand-lg text-uppercase fs-6 fixed-top';
-    
-    if (isHomePage && !scrolled) {
-      classes += ' navbar-transparent';
-    } else {
-      classes += ' navbar-solid';
-    }
-    
-    if (scrolled) {
-      classes += ' navbar-scrolled';
-    }
-    
-    return classes;
-  };
+  const navClasses = [
+    'navbar navbar-expand-lg fixed-top',
+    isHomePage && !scrolled ? 'navbar-transparent' : 'navbar-solid',
+    scrolled ? 'navbar-scrolled' : '',
+  ].filter(Boolean).join(' ');
+
+  const displayName = isLoggedIn && user?.pu_name
+    ? user.pu_name.split(' ')[0]
+    : 'Account';
 
   return (
     <div className="header-wrapper">
-      <nav
-        id="app-navbar"
-        className={getNavbarClasses()}
-        role="navigation"
-      >
-        <div className="container-fluid px-3 px-lg-4" style={{ overflow: 'visible' }}>
+      <nav id="app-navbar" className={navClasses} role="navigation">
+        <div className="container-fluid" style={{ overflow: 'visible' }}>
           <div className="d-flex justify-content-between align-items-center w-100" style={{ overflow: 'visible' }}>
-            <Link to="/" className="navbar-brand d-flex align-items-center gap-2 text-decoration-none">
+
+            {/* Logo */}
+            <Link to="/" className="navbar-brand text-decoration-none">
               <img
                 src={require('../../assets/images/appbar.png')}
                 alt="Fashion Frame"
-                className="img-fluid navbar-logo"
+                className="navbar-logo"
               />
             </Link>
 
-            <button
-              className="navbar-toggler border-0 p-2 d-lg-none"
-              type="button"
-              onClick={handleMenuToggle}
-              aria-label="Toggle navigation"
-              aria-expanded={isMenuOpen}
-            >
-              <FontAwesomeIcon 
-                icon={isMenuOpen ? faTimes : faBars} 
-                className="mobile-toggle-icon"
-              />
-            </button>
+            {/* Desktop Nav Links */}
+            <ul className="lux-nav-list lux-desktop-nav">
+              <li className="lux-nav-item">
+                <NavLink to="/" className={({ isActive }) => `lux-nav-link${isActive ? ' active' : ''}`}>
+                  Home
+                </NavLink>
+              </li>
 
-            <div 
-              className={`mobile-menu-overlay ${isMenuOpen ? 'active' : ''}`}
-              onClick={closeMenu}
-            ></div>
-
-            <div className={`mobile-menu ${isMenuOpen ? 'show' : ''}`} id="navbarNav">
-              <div className="mobile-menu-header d-lg-none d-flex justify-content-between align-items-center p-3 border-bottom">
-                <h5 className="mb-0 fw-bold" style={FORCE_BLACK}>Menu</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={closeMenu}
-                  aria-label="Close menu"
-                ></button>
-              </div>
-
-              <div className="mobile-menu-content">
-                <ul className="navbar-nav mx-auto py-2 py-lg-0 gap-2 gap-lg-3">
-                  <li className="nav-item" style={FORCE_BLACK}>
-                    <NavLink 
-                      className={({ isActive }) => "nav-link" + (isActive ? " active-link" : "")} 
-                      to="/"
-                      onClick={closeMenu}
-                      style={FORCE_BLACK}
-                    >
-                      <span style={FORCE_BLACK}>HOME</span>
-                    </NavLink>
-                  </li>
-                  
-                  <li className="nav-item dropdown position-static d-none d-lg-block">
-                    <NavLink 
-                      to="#" 
-                      role="button" 
-                      data-bs-toggle="dropdown" 
-                      className="nav-link dropdown-toggle"
-                      style={{ textDecoration: 'none' }}
-                    >
-                      COLLECTION
-                    </NavLink>
-                    <ul className="dropdown-menu mega-menu p-0">
-                      <div className="row g-0">
-                        {categoryData.map((category) => (
-                          <div className="col-md-3 col-12 mega-menu-category" key={category.category_id}>
-                            <Link
-                              to={`/collection/${category.c_slug}`}
-                              style={{ textDecoration: 'none', color: 'inherit' }}
-                              onClick={closeMenu}
-                            >
-                              <h6 className="dropdown-header text-uppercase fw-bold">
-                                {category.c_name}
-                              </h6>
+              <li className="lux-nav-item">
+                <span className="lux-nav-link">
+                  Collection
+                  <FontAwesomeIcon icon={faChevronDown} style={{ fontSize: 8, marginLeft: 4 }} />
+                </span>
+                {categoryData.length > 0 && (
+                  <div className="lux-mega-menu">
+                    <div className="row g-0">
+                      {categoryData.map((category) => (
+                        <div className="lux-mega-col col" key={category.category_id}>
+                          <Link to={`/collection/${category.c_slug}`} className="lux-mega-heading" onClick={closeMenu}>
+                            {category.c_name}
+                          </Link>
+                          {category.subcategories.map((sub) => (
+                            <Link to={`/products/${sub.sc_slug}`} className="lux-mega-link" key={sub.sc_slug} onClick={closeMenu}>
+                              {sub.sc_name.length > 25 ? sub.sc_name.slice(0, 25) + '…' : sub.sc_name}
                             </Link>
-                            {category.subcategories.map((sub) => (
-                              <NavLink
-                                className={({ isActive }) => "dropdown-item" + (isActive ? " active-link" : "")}
-                                to={`/products/${sub.sc_slug}`}
-                                key={sub.sc_slug}
-                                onClick={closeMenu}
-                              >
-                                {sub.sc_name.length > 25 ? sub.sc_name.slice(0, 25) + '...' : sub.sc_name}
-                              </NavLink>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </ul>
-                  </li>
-
-                  <li className="nav-item d-lg-none" style={FORCE_BLACK}>
-                    <button 
-                      className="nav-link w-100 text-start border-0 bg-transparent d-flex justify-content-between align-items-center"
-                      onClick={toggleCategory}
-                      style={FORCE_BLACK}
-                    >
-                      <span style={FORCE_BLACK}>COLLECTION</span>
-                      <FontAwesomeIcon 
-                        icon={isCategoryOpen ? faChevronUp : faChevronDown} 
-                        className="ms-2"
-                        style={{ fontSize: '0.8rem', ...FORCE_BLACK }}
-                      />
-                    </button>
-                    {isCategoryOpen && (
-                      <div className="mobile-category-menu ps-3">
-                        {categoryData.map((category) => (
-                          <div key={category.category_id} className="mb-3">
-                            <Link
-                              to={`/collection/${category.c_slug}`}
-                              className="d-block fw-bold text-uppercase mb-2"
-                              style={{ ...FORCE_BLACK, textDecoration: 'none', fontSize: '0.9rem' }}
-                              onClick={closeMenu}
-                            >
-                              <span style={FORCE_BLACK}>{category.c_name}</span>
-                            </Link>
-                            {category.subcategories.map((sub) => (
-                              <NavLink
-                                className={({ isActive }) => "d-block py-1 ps-2" + (isActive ? " text-danger fw-bold" : "")}
-                                to={`/products/${sub.sc_slug}`}
-                                key={sub.sc_slug}
-                                onClick={closeMenu}
-                                style={{ ...FORCE_BLACK, textDecoration: 'none', fontSize: '0.85rem' }}
-                              >
-                                <span style={FORCE_BLACK}>{sub.sc_name.length > 25 ? sub.sc_name.slice(0, 25) + '...' : sub.sc_name}</span>
-                              </NavLink>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-
-                  <li className="nav-item" style={FORCE_BLACK}>
-                    <NavLink 
-                      className={({ isActive }) => "nav-link" + (isActive ? " active-link" : "")} 
-                      to="/products"
-                      onClick={closeMenu}
-                      style={FORCE_BLACK}
-                    >
-                      <span style={FORCE_BLACK}>PRODUCTS</span>
-                    </NavLink>
-                  </li>
-                  <li className="nav-item" style={FORCE_BLACK}>
-                    <NavLink 
-                      className={({ isActive }) => "nav-link" + (isActive ? " active-link" : "")} 
-                      to="/pages/about-us"
-                      onClick={closeMenu}
-                      style={FORCE_BLACK}
-                    >
-                      <span style={FORCE_BLACK}>ABOUT US</span>
-                    </NavLink>
-                  </li>
-                  <li className="nav-item" style={FORCE_BLACK}>
-                    <NavLink 
-                      className={({ isActive }) => "nav-link" + (isActive ? " active-link" : "")} 
-                      to="/contact"
-                      onClick={closeMenu}
-                      style={FORCE_BLACK}
-                    >
-                      <span style={FORCE_BLACK}>CONTACT US</span>
-                    </NavLink>
-                  </li>
-                </ul>
-
-                <div className="d-lg-none px-3 py-2 border-top">
-                  <h6 className="mb-2 small" style={FORCE_BLACK}>QUICK LINKS</h6>
-                  <Link to="/wishlist" className="nav-link py-2 d-block" onClick={closeMenu} style={FORCE_BLACK}>
-                    <FontAwesomeIcon icon={faHeart} className="me-2" style={FORCE_BLACK} /> 
-                    <span style={FORCE_BLACK}>Wishlist</span>
-                  </Link>
-                  <Link to="/cart" className="nav-link py-2 d-block" onClick={closeMenu} style={FORCE_BLACK}>
-                    <FontAwesomeIcon icon={faShoppingCart} className="me-2" style={FORCE_BLACK} /> 
-                    <span style={FORCE_BLACK}>Cart</span>
-                    {cartCount > 0 && <span className="badge bg-danger ms-1">{cartCount}</span>}
-                  </Link>
-                </div>
-
-                <div className="d-lg-none px-3 py-2 border-top">
-                  <h6 className="mb-2 small" style={FORCE_BLACK}>ACCOUNT</h6>
-                  {isLoggedIn ? (
-                    <>
-                      <button className="nav-link text-start w-100 border-0 bg-transparent py-2 d-block" onClick={handleProfileClick} style={FORCE_BLACK}>
-                        <FontAwesomeIcon icon={faUser} className="me-2" style={FORCE_BLACK} /> 
-                        <span style={FORCE_BLACK}>Profile</span>
-                      </button>
-                      <button className="nav-link text-start w-100 border-0 bg-transparent py-2 d-block" onClick={handleOrderHistoryClick} style={FORCE_BLACK}>
-                        <FontAwesomeIcon icon={faUser} className="me-2" style={FORCE_BLACK} /> 
-                        <span style={FORCE_BLACK}>My Orders</span>
-                      </button>
-                      <button
-                        className="nav-link text-start w-100 border-0 bg-transparent py-2 d-block"
-                        onClick={handleLogout}
-                        style={{ color: '#dc3545', textShadow: 'none' }}
-                      >
-                        <FontAwesomeIcon icon={faSignOutAlt} className="me-2" style={{ color: '#dc3545' }} /> 
-                        <span style={{ color: '#dc3545' }}>Logout</span>
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        className="nav-link text-start w-100 border-0 bg-transparent py-2 d-block"
-                        onClick={() => {
-                          setShowRegistration(true);
-                          closeMenu();
-                        }}
-                        style={FORCE_BLACK}
-                      >
-                        <FontAwesomeIcon icon={faUser} className="me-2" style={FORCE_BLACK} /> 
-                        <span style={FORCE_BLACK}>Sign Up</span>
-                      </button>
-                      <button
-                        className="nav-link text-start w-100 border-0 bg-transparent py-2 d-block"
-                        onClick={() => {
-                          setShowLogin(true);
-                          closeMenu();
-                        }}
-                        style={FORCE_BLACK}
-                      >
-                        <FontAwesomeIcon icon={faUser} className="me-2" style={FORCE_BLACK} /> 
-                        <span style={FORCE_BLACK}>Login</span>
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="header-items d-none d-lg-flex align-items-center gap-3" style={{ overflow: 'visible', position: 'relative' }}>
-              <Link to="/cart" className="position-relative text-decoration-none nav-icon-link">
-                <FontAwesomeIcon icon={faShoppingCart} className="nav-icon" />
-                {cartCount > 0 && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
-                    {cartCount}
-                    <span className="visually-hidden">items in cart</span>
-                  </span>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
+              </li>
+
+              <li className="lux-nav-item">
+                <NavLink to="/products" className={({ isActive }) => `lux-nav-link${isActive ? ' active' : ''}`}>
+                  Products
+                </NavLink>
+              </li>
+              <li className="lux-nav-item">
+                <NavLink to="/pages/about-us" className={({ isActive }) => `lux-nav-link${isActive ? ' active' : ''}`}>
+                  About Us
+                </NavLink>
+              </li>
+              <li className="lux-nav-item">
+                <NavLink to="/contact" className={({ isActive }) => `lux-nav-link${isActive ? ' active' : ''}`}>
+                  Contact
+                </NavLink>
+              </li>
+            </ul>
+
+            {/* Desktop Icons */}
+            <div className="lux-header-icons">
+              <Link to="/cart" className="lux-icon-btn">
+                <FontAwesomeIcon icon={faShoppingCart} className="nav-icon" />
+                {cartCount > 0 && <span className="lux-cart-badge">{cartCount}</span>}
               </Link>
-              
-              <div className="nav-item dropdown account-dropdown" ref={accountDropdownRef}>
+
+              <div className="lux-account-wrap" ref={accountDropdownRef}>
                 <button
-                  className="nav-link dropdown-toggle d-flex align-items-center bg-transparent border-0 p-0"
-                  onClick={toggleAccountDropdown}
-                  aria-expanded={isAccountDropdownOpen}
-                  style={{ textDecoration: 'none', cursor: 'pointer' }}
+                  className={`lux-account-btn${isAccountDropdownOpen ? ' open' : ''}`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsAccountDropdownOpen(o => !o); }}
                 >
-                  <FontAwesomeIcon icon={faUser} className="me-1" />
-                  <span>{isLoggedIn && user?.pu_name ? user?.pu_name : 'ACCOUNT'}</span>
+                  <FontAwesomeIcon icon={faUser} style={{ fontSize: 13 }} />
+                  <span>{displayName}</span>
+                  <FontAwesomeIcon icon={faChevronDown} className="lux-chevron" />
                 </button>
-                <ul className={`dropdown-menu dropdown-menu-end ${isAccountDropdownOpen ? 'show' : ''}`}>
+
+                <div className={`lux-account-dropdown${isAccountDropdownOpen ? ' open' : ''}`}>
                   {isLoggedIn ? (
                     <>
-                      <li><button className="dropdown-item" onClick={handleProfileClick}>Profile</button></li>
-                      <li><button className="dropdown-item" onClick={handleWishlistClick}>Wishlist</button></li>
-                      <li><button className="dropdown-item" onClick={handleOrderHistoryClick}>My Orders</button></li>
-                      <li><hr className="dropdown-divider" /></li>
-                      <li><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
+                      <div className="lux-user-greeting">{user?.pu_name || 'Welcome'}</div>
+                      <button className="lux-dropdown-item" onClick={handleProfileClick}>
+                        <FontAwesomeIcon icon={faUser} style={{ fontSize: 12 }} /> Profile
+                      </button>
+                      <button className="lux-dropdown-item" onClick={handleWishlistClick}>
+                        <FontAwesomeIcon icon={faHeart} style={{ fontSize: 12 }} /> Wishlist
+                      </button>
+                      <button className="lux-dropdown-item" onClick={handleOrderHistoryClick}>
+                        <FontAwesomeIcon icon={faClipboardList} style={{ fontSize: 12 }} /> My Orders
+                      </button>
+                      <div className="lux-dropdown-divider" />
+                      <button className="lux-dropdown-item danger" onClick={handleLogout}>
+                        <FontAwesomeIcon icon={faSignOutAlt} style={{ fontSize: 12 }} /> Logout
+                      </button>
                     </>
                   ) : (
-                    <li>
-                      <button className="dropdown-item" onClick={(e) => { e.preventDefault(); setShowLogin(true); setIsAccountDropdownOpen(false); }}>Sign In</button>
-                    </li>
+                    <>
+                      <button className="lux-dropdown-item" onClick={() => { setShowLogin(true); setIsAccountDropdownOpen(false); }}>
+                        <FontAwesomeIcon icon={faUser} style={{ fontSize: 12 }} /> Sign In
+                      </button>
+                      <button className="lux-dropdown-item" onClick={() => { setShowRegistration(true); setIsAccountDropdownOpen(false); }}>
+                        <FontAwesomeIcon icon={faUser} style={{ fontSize: 12 }} /> Sign Up
+                      </button>
+                    </>
                   )}
-                </ul>
+                </div>
               </div>
             </div>
+
+            {/* Hamburger */}
+            <button className="lux-hamburger" onClick={() => setIsMenuOpen(o => !o)} aria-label="Toggle menu">
+              <FontAwesomeIcon icon={isMenuOpen ? faTimes : faBars} />
+            </button>
           </div>
         </div>
       </nav>
 
-      <Registration show={showRegistration} onClose={() => setShowRegistration(false)} switchToLogin={switchToLogin} />
-      <Login show={showLogin} onClose={() => setShowLogin(false)} switchToRegistration={switchToRegistration} />
+      {/* Mobile overlay */}
+      <div className={`mobile-menu-overlay${isMenuOpen ? ' active' : ''}`} onClick={closeMenu} />
+
+      {/* Mobile drawer */}
+      <div className={`mobile-menu${isMenuOpen ? ' show' : ''}`}>
+        <div className="lux-mobile-header">
+          <span className="lux-mobile-title">Fashion Frame</span>
+          <button className="lux-mobile-close" onClick={closeMenu}>
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        </div>
+
+        <div className="lux-mobile-nav">
+          <NavLink to="/" className={({ isActive }) => `lux-mobile-link${isActive ? ' active' : ''}`} onClick={closeMenu}>
+            Home
+          </NavLink>
+
+          <button className="lux-mobile-link" onClick={() => setIsCategoryOpen(o => !o)}>
+            Collection
+            <FontAwesomeIcon icon={faChevronDown} className={`lux-mobile-chevron${isCategoryOpen ? ' open' : ''}`} />
+          </button>
+          {isCategoryOpen && (
+            <div className="lux-mobile-cats">
+              {categoryData.map((category) => (
+                <div key={category.category_id} className="lux-mobile-cat-group">
+                  <Link to={`/collection/${category.c_slug}`} className="lux-mobile-cat-heading" onClick={closeMenu}>
+                    {category.c_name}
+                  </Link>
+                  {category.subcategories.map((sub) => (
+                    <Link to={`/products/${sub.sc_slug}`} className="lux-mobile-sublink" key={sub.sc_slug} onClick={closeMenu}>
+                      {sub.sc_name.length > 28 ? sub.sc_name.slice(0, 28) + '…' : sub.sc_name}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <NavLink to="/products" className={({ isActive }) => `lux-mobile-link${isActive ? ' active' : ''}`} onClick={closeMenu}>Products</NavLink>
+          <NavLink to="/pages/about-us" className={({ isActive }) => `lux-mobile-link${isActive ? ' active' : ''}`} onClick={closeMenu}>About Us</NavLink>
+          <NavLink to="/contact" className={({ isActive }) => `lux-mobile-link${isActive ? ' active' : ''}`} onClick={closeMenu}>Contact</NavLink>
+
+          <div className="lux-mobile-divider" />
+          <div className="lux-mobile-section-label">Quick Links</div>
+          <Link to="/cart" className="lux-mobile-icon-link" onClick={closeMenu}>
+            <FontAwesomeIcon icon={faShoppingCart} className="lux-mobile-icon" /> Cart
+            {cartCount > 0 && <span className="lux-mobile-badge">{cartCount}</span>}
+          </Link>
+          <Link to="/wishlist" className="lux-mobile-icon-link" onClick={closeMenu}>
+            <FontAwesomeIcon icon={faHeart} className="lux-mobile-icon" /> Wishlist
+          </Link>
+
+          <div className="lux-mobile-divider" />
+          <div className="lux-mobile-section-label">Account</div>
+          {isLoggedIn ? (
+            <>
+              <button className="lux-mobile-icon-link" onClick={handleProfileClick}>
+                <FontAwesomeIcon icon={faUser} className="lux-mobile-icon" /> Profile
+              </button>
+              <button className="lux-mobile-icon-link" onClick={handleOrderHistoryClick}>
+                <FontAwesomeIcon icon={faClipboardList} className="lux-mobile-icon" /> My Orders
+              </button>
+              <button className="lux-mobile-icon-link danger" onClick={handleLogout}>
+                <FontAwesomeIcon icon={faSignOutAlt} className="lux-mobile-icon" /> Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="lux-mobile-icon-link" onClick={() => { setShowLogin(true); closeMenu(); }}>
+                <FontAwesomeIcon icon={faUser} className="lux-mobile-icon" /> Sign In
+              </button>
+              <button className="lux-mobile-icon-link" onClick={() => { setShowRegistration(true); closeMenu(); }}>
+                <FontAwesomeIcon icon={faUser} className="lux-mobile-icon" /> Sign Up
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <Registration
+        show={showRegistration}
+        onClose={() => setShowRegistration(false)}
+        switchToLogin={() => { setShowRegistration(false); setShowLogin(true); }}
+      />
+      <Login
+        show={showLogin}
+        onClose={() => setShowLogin(false)}
+        switchToRegistration={() => { setShowLogin(false); setShowRegistration(true); }}
+      />
     </div>
   );
 };

@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap');
+
+/* ════════════════════════════════════════
+   FOOTER — Warm White Theme
+════════════════════════════════════════ */
+.lux-footer {
+  background: #fafaf8;
+  color: #7a706a;
+  font-family: 'Jost', sans-serif;
+  border-top: 1px solid #e8e2da;
+}
+
+.lux-footer-top {
+  padding: 10px 0 48px;
+}
+
+/* ── Brand column ── */
+.lux-footer-brand { margin-bottom: 28px; }
+.lux-footer-brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+.lux-footer-brand-name::after {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1.5px;
+  background: #c9a96e;
+  margin-top: 10px;
+}
+.lux-footer-tagline {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b0a89c;
+  margin-top: 14px;
+}
+
+/* ── Column headings ── */
+.lux-footer-heading {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  font-weight: 500;
+  margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 12px;
+}
+.lux-footer-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 20px;
+  height: 1.5px;
+  background: #c9a96e;
+}
+
+/* ── Links ── */
+.lux-footer-links { list-style: none; padding: 0; margin: 0; }
+.lux-footer-links li { margin-bottom: 10px; }
+.lux-footer-links a {
+  font-size: 0.82rem;
+  color: #9b8f80;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.2s ease, padding-left 0.2s ease;
+  display: inline-block;
+}
+.lux-footer-links a:hover { color: #c9a96e; padding-left: 4px; }
+
+/* ── Contact info ── */
+.lux-footer-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: #7a706a;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+}
+.lux-footer-contact-label {
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c9a96e;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* ── Social icons ── */
+.lux-social-links { display: flex; gap: 10px; list-style: none; padding: 0; margin: 0; }
+.lux-social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #e0d9d0;
+  border-radius: 2px;
+  background: #fff;
+  transition: all 0.25s ease;
+}
+.lux-social-links a:hover { border-color: #c9a96e; background: #fffbf2; }
+.lux-social-links img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: grayscale(0.3) opacity(0.75);
+  transition: filter 0.25s ease;
+}
+.lux-social-links a:hover img { filter: grayscale(0) opacity(1); }
+
+/* ── Bottom bar ── */
+.lux-footer-bottom {
+  border-top: 1px solid #e8e2da;
+  padding: 22px 0;
+  background: #f4f0ea;
+}
+.lux-footer-bottom-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.lux-footer-logos { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.lux-footer-logos-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b0a89c;
+}
+.lux-footer-logos img {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.lux-footer-logos img:hover { opacity: 0.85; }
+.lux-footer-logos .lux-logo-divider { width: 1px; height: 16px; background: #d8d0c8; }
+.lux-footer-copy { font-size: 0.72rem; color: #b0a89c; letter-spacing: 0.1em; }
+
+/* ── Back to top ── */
+.lux-back-to-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border: 1px solid #c9a96e;
+  color: #c9a96e;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 999;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.lux-back-to-top:hover {
+  background: #c9a96e;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(201,169,110,0.3);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .lux-footer-top { padding: 0px 0 32px; }
+  .lux-footer-bottom-inner { flex-direction: column; align-items: flex-start; }
+}

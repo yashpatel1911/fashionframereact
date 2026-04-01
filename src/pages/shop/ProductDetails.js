@@ -7,6 +7,7 @@ import { faHeart, faMinus, faPlus, faTimes, faSearchPlus } from '@fortawesome/fr
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'swiper/css';
+import LoadingSpinner from "../../components/LoadingSpinner";
 import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
 import API_ENDPOINTS, { IMAGE_BASE_URL } from "../../api/apiConfig";
@@ -40,14 +41,14 @@ const StarRow = ({ rating, size = 16 }) => {
 const REVIEWS_PER_PAGE = 5;
 
 const ReviewsSection = ({ productId }) => {
-  const [reviewsLoading, setReviewsLoading]   = useState(true);
-  const [loadingMore, setLoadingMore]         = useState(false);
-  const [averageRating, setAverageRating]     = useState(0);
-  const [totalReviews, setTotalReviews]       = useState(0);
-  const [breakdown, setBreakdown]             = useState({});
-  const [reviews, setReviews]                 = useState([]);
-  const [currentPage, setCurrentPage]         = useState(1);
-  const [pagination, setPagination]           = useState(null);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [breakdown, setBreakdown] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
 
   // ── Fetch a specific page from the server ────────────────────────
   const fetchReviews = async (page = 1, append = false) => {
@@ -412,9 +413,9 @@ const ProductDetails = () => {
   if (loading) {
     return (
       <div className="loading-spinner">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+
+        <LoadingSpinner />
+
       </div>
     );
   }

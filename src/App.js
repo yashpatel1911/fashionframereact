@@ -15,7 +15,7 @@ import 'aos/dist/aos.css';
 import Navbar from './components/layout/Navbar';
 import SearchPopup from './components/layout/SearchPopup';
 import Footer from './components/layout/Footer';
-import ScrollToTop from './components/ScrollToTop'; // ✅ Import ScrollToTop
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import Home from './pages/Home';
@@ -47,9 +47,6 @@ function App() {
       once: true,
     });
 
-    // Add homepage class to body
-    document.body.classList.add('homepage');
-
     // Handle preloader
     const preloader = document.querySelector('.preloader');
     if (preloader) {
@@ -57,18 +54,13 @@ function App() {
         preloader.classList.add('loaded');
       }, 800);
     }
-
-    // Cleanup function
-    return () => {
-      document.body.classList.remove('homepage');
-    };
   }, []);
 
   return (
     <Router>
       <UserProvider>
         <div className="App">
-          <ScrollToTop /> {/* ✅ Add ScrollToTop component here */}
+          <ScrollToTop />
           <div className="preloader text-white fs-6 text-uppercase overflow-hidden">
             <div>Loading...</div>
           </div>

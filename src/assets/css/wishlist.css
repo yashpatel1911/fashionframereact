@@ -1,0 +1,367 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap');
+
+/* ════════════════════════════════════════
+   WISHLIST PAGE — Luxury White Theme
+════════════════════════════════════════ */
+
+.lux-wishlist-page {
+  min-height: 100vh;
+  background: #fafaf8;
+  font-family: 'Jost', sans-serif;
+}
+
+/* ── Page Header ── */
+.lux-wishlist-header {
+  padding: 52px 0 36px;
+  text-align: center;
+  position: relative;
+  background: #fafaf8;
+}
+.lux-wishlist-header::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 1.5px;
+  background: #c9a96e;
+  margin: 18px auto 0;
+}
+.lux-wishlist-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 2.6rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #1a1a1a;
+  margin: 0;
+}
+.lux-wishlist-subtitle {
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9b8f80;
+  margin-top: 6px;
+  font-weight: 300;
+}
+
+/* ── Section ── */
+.lux-wishlist-section {
+  padding: 0 0 80px;
+}
+
+/* ── Toolbar ── */
+.lux-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ece8e1;
+}
+.lux-count-label {
+  font-size: 0.76rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9b8f80;
+}
+.lux-count-label strong {
+  color: #1a1a1a;
+  font-weight: 500;
+}
+.lux-sort-select {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  color: #4a4540;
+  border: 1px solid #e0d9d0;
+  background: #fff;
+  padding: 8px 32px 8px 14px;
+  border-radius: 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23c9a96e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.lux-sort-select:focus { border-color: #c9a96e; }
+
+/* ── Product Card ── */
+.lux-wish-card {
+  background: #fff;
+  border: 1px solid #ece8e1;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  animation: wishCardIn 0.4s ease forwards;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.lux-wish-card:hover {
+  border-color: #c9a96e;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  transform: translateY(-3px);
+}
+
+@keyframes wishCardIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lux-wish-card:nth-child(1)  { animation-delay: 0.04s; }
+.lux-wish-card:nth-child(2)  { animation-delay: 0.08s; }
+.lux-wish-card:nth-child(3)  { animation-delay: 0.12s; }
+.lux-wish-card:nth-child(4)  { animation-delay: 0.16s; }
+.lux-wish-card:nth-child(5)  { animation-delay: 0.20s; }
+.lux-wish-card:nth-child(6)  { animation-delay: 0.24s; }
+.lux-wish-card:nth-child(7)  { animation-delay: 0.28s; }
+.lux-wish-card:nth-child(8)  { animation-delay: 0.32s; }
+
+/* ── Image wrapper ── */
+.lux-wish-img-wrap {
+  position: relative;
+  overflow: hidden;
+  background: #f5f0ea;
+  aspect-ratio: 3 / 4;
+}
+.lux-wish-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+.lux-wish-card:hover .lux-wish-img-wrap img {
+  transform: scale(1.04);
+}
+
+/* ── Wishlist heart button ── */
+.lux-heart-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #e8e0d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 2;
+  font-size: 14px;
+}
+.lux-heart-btn:hover {
+  background: #fff;
+  border-color: #c9a96e;
+  transform: scale(1.1);
+}
+.lux-heart-btn.active {
+  background: #fff5f5;
+  border-color: #e8a0a0;
+}
+.lux-heart-btn .icon-heart { transition: color 0.2s; }
+
+/* ── Card body ── */
+.lux-wish-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.lux-wish-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  letter-spacing: 0.02em;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.lux-wish-name:hover { color: #c9a96e; }
+
+/* ── Price ── */
+.lux-wish-price {
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lux-price-now {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  letter-spacing: 0.02em;
+}
+.lux-price-original {
+  font-size: 0.8rem;
+  color: #b0a89c;
+  text-decoration: line-through;
+  font-family: 'Jost', sans-serif;
+}
+.lux-price-off {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a9e6e;
+  border: 1px solid #c8dfc4;
+  background: #f4faf2;
+  padding: 1px 7px;
+  border-radius: 2px;
+  font-family: 'Jost', sans-serif;
+}
+
+/* ── View button on hover ── */
+.lux-wish-view {
+  display: block;
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(26,26,26,0.88);
+  color: #fff;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 11px;
+  text-decoration: none;
+  transform: translateY(100%);
+  transition: transform 0.28s ease;
+}
+.lux-wish-card:hover .lux-wish-view { transform: translateY(0); }
+
+/* ── Empty state ── */
+.lux-wish-empty {
+  text-align: center;
+  padding: 80px 0;
+}
+.lux-wish-empty-icon {
+  font-size: 3rem;
+  color: #e0d9d0;
+  margin-bottom: 16px;
+  display: block;
+}
+.lux-wish-empty-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #3a3530;
+  margin-bottom: 8px;
+}
+.lux-wish-empty-sub {
+  font-size: 0.82rem;
+  color: #9b8f80;
+  letter-spacing: 0.08em;
+  margin-bottom: 28px;
+}
+.lux-btn-ghost {
+  display: inline-block;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 13px 32px;
+  background: none;
+  color: #1a1a1a;
+  border: 1px solid #d0c8bc;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+.lux-btn-ghost:hover { border-color: #1a1a1a; color: #1a1a1a; text-decoration: none; }
+
+/* ── Loading ── */
+.lux-wish-loading {
+  text-align: center;
+  padding: 80px 0;
+  color: #9b8f80;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.lux-wish-loading::after {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1.5px;
+  background: #c9a96e;
+  margin: 16px auto 0;
+  animation: loadPulse 1.4s ease-in-out infinite;
+}
+@keyframes loadPulse {
+  0%,100% { opacity: 0.3; width: 32px; }
+  50%      { opacity: 1;   width: 60px; }
+}
+
+/* ── Divider ── */
+.lux-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e0d9d0, transparent);
+  margin: 8px 0;
+}
+
+/* ── Pagination ── */
+.lux-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 52px;
+  flex-wrap: wrap;
+}
+.lux-page-btn {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0d9d0;
+  background: #fff;
+  color: #5a4f45;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+.lux-page-btn:hover:not(:disabled):not(.disabled) {
+  border-color: #c9a96e;
+  color: #c9a96e;
+}
+.lux-page-btn.active {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #fff;
+}
+.lux-page-btn:disabled,
+.lux-page-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.lux-page-text {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  padding: 0 10px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  color: #9b8f80;
+  cursor: default;
+}

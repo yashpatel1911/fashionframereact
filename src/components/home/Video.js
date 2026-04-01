@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const Video = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -16,10 +16,10 @@ const Video = () => {
               {!isPlaying && (
                 <>
                   <div className="video-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25"></div>
-                  <img 
-                    src={require('../../assets/images/video-image.jpg')} 
-                    alt="Classic Collection" 
-                    className="img-fluid w-100" 
+                  <img
+                    src={require('../../assets/images/video-image.jpg')}
+                    alt="Classic Collection"
+                    className="img-fluid w-100"
                     style={{ height: '600px', objectFit: 'cover' }}
                   />
                   <div className="circular-text position-absolute top-50 start-50 translate-middle">
@@ -27,18 +27,18 @@ const Video = () => {
                       <path id="circle" d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
                       <text>
                         <textPath href="#circle">
-                          CLASSIC COLLECTION 2022 · CLASSIC COLLECTION 2022 ·
+                          FASHION FRAME 2025 · FASHION FRAME 2025 ·
                         </textPath>
                       </text>
                     </svg>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-play position-absolute top-50 start-50 translate-middle bg-white rounded-circle border-0 shadow-sm"
                       onClick={handlePlayClick}
                       style={{ width: '80px', height: '80px', cursor: 'pointer' }}
                     >
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24" className="ms-1">
-                        <path d="M8 5v14l11-7z" fill="currentColor"/>
+                        <path d="M8 5v14l11-7z" fill="currentColor" />
                       </svg>
                     </button>
                   </div>
