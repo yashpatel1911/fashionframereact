@@ -377,7 +377,7 @@
    PRICES
 ════════════════════════════════════════ */
 .lux-price {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.1rem;
   font-weight: 500;
   color: #1a1a1a;
@@ -392,7 +392,7 @@
   font-family: 'Jost', sans-serif;
 }
 .lux-price-discounted {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.15rem;
   font-weight: 600;
   color: #b5541a;
@@ -431,7 +431,7 @@
   opacity: 0;
 }
 .lux-summary-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.4rem;
   font-weight: 400;
   color: #1a1a1a;
@@ -456,7 +456,7 @@
   letter-spacing: 0.04em;
 }
 .lux-summary-row.total {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.3rem;
   color: #1a1a1a;
   font-weight: 500;
@@ -496,14 +496,14 @@
   color: #9b8f80;
 }
 .lux-amount-value {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 2rem;
   font-weight: 500;
   color: #1a1a1a;
   letter-spacing: 0.04em;
 }
 .lux-amount-currency {
-  font-size: 1.1rem;
+  font-size: 2rem;
   color: #9b8f80;
   margin-right: 2px;
   font-family: 'Jost', sans-serif;
@@ -714,7 +714,7 @@
   margin-left: auto;
   text-align: right;
   flex-shrink: 0;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.05rem;
   color: #1a1a1a;
   font-weight: 500;

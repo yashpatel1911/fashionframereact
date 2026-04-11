@@ -302,7 +302,7 @@
   overflow: hidden; text-overflow: ellipsis;
 }
 .oh-summary-amount {
-  font-family: var(--oh-serif);
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.05rem; font-weight: 600;
   color: var(--oh-navy); white-space: nowrap;
 }
@@ -400,8 +400,8 @@
 .oh-meta-chip i { font-size: 9px; color: var(--oh-gold); }
 .oh-item-price-row { display: flex; align-items: center; gap: 7px; }
 .oh-item-price {
-  font-family: var(--oh-serif);
-  font-size: 1.05rem; font-weight: 600; color: var(--oh-navy);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem; font-weight: 600; color: var(--oh-navy);
 }
 .oh-item-off-tag {
   display: inline-flex; align-items: center; gap: 3px;
