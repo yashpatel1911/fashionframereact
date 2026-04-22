@@ -50,7 +50,6 @@ const ReviewsSection = ({ productId }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
 
-  // ── Fetch a specific page from the server ────────────────────────
   const fetchReviews = async (page = 1, append = false) => {
     if (page === 1) setReviewsLoading(true);
     else setLoadingMore(true);
@@ -71,7 +70,6 @@ const ReviewsSection = ({ productId }) => {
         setTotalReviews(data.total_reviews || 0);
         setBreakdown(data.rating_breakdown || {});
         setPagination(data.pagination || null);
-        // append = load more, replace = fresh load / page change
         setReviews((prev) => append ? [...prev, ...data.data] : data.data);
         setCurrentPage(page);
       }
@@ -98,7 +96,6 @@ const ReviewsSection = ({ productId }) => {
   };
 
   const handlePageChange = (page) => {
-    // Full page-switch mode: replace reviews, scroll up
     fetchReviews(page, false);
     document.getElementById('reviews-section-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -265,10 +262,9 @@ const ReviewsSection = ({ productId }) => {
             </div>
           )}
 
-          {/* ── Page number buttons (shown when more than 1 page and not in "load more" mode) ── */}
+          {/* ── Page number buttons ── */}
           {pagination && pagination.total_pages > 1 && !hasMore && currentPage === pagination.total_pages && (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', marginTop: '16px', flexWrap: 'wrap' }}>
-              {/* Prev */}
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!pagination.has_previous}
@@ -276,7 +272,6 @@ const ReviewsSection = ({ productId }) => {
               >
                 ‹
               </button>
-              {/* Page numbers */}
               {getPageNumbers().map((p, idx) =>
                 p === '...' ? (
                   <span key={`e${idx}`} style={{ color: '#9CA3AF', fontSize: '13px', padding: '0 4px' }}>...</span>
@@ -290,7 +285,6 @@ const ReviewsSection = ({ productId }) => {
                   </button>
                 )
               )}
-              {/* Next */}
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!pagination.has_next}
@@ -305,6 +299,172 @@ const ReviewsSection = ({ productId }) => {
     </div>
   );
 };
+
+// ─────────────────────────────────────────────────────────────────
+// Color Variants Component
+// ─────────────────────────────────────────────────────────────────
+const ColorVariants = ({ product, onVariantClick }) => {
+  const [hoveredId, setHoveredId] = useState(null);
+
+  // Don't render if no color info at all
+  if (!product.color && (!product.color_variants || product.color_variants.length === 0)) {
+    return null;
+  }
+
+  const totalColors = (product.color_variants?.length || 0) + 1;
+
+  return (
+    <div className="color-selector mb-4">
+      {/* Label row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <label className="form-label mb-0" style={{ fontWeight: '600', fontSize: '13px', color: '#374151' }}>
+          Colour:&nbsp;
+          <span style={{ color: '#111827', fontWeight: '700' }}>
+            {hoveredId
+              ? (product.color_variants?.find(v => v.p_id === hoveredId)?.color || product.color || '—')
+              : (product.color || '—')}
+          </span>
+        </label>
+        {totalColors > 1 && (
+          <span style={{ fontSize: '11px', color: '#9CA3AF', fontWeight: '500' }}>
+            {totalColors} colour{totalColors !== 1 ? 's' : ''} available
+          </span>
+        )}
+      </div>
+
+      {/* Swatches row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+
+        {/* ── Current product swatch (active/selected) ── */}
+        <div
+          title={product.color || 'Current'}
+          onMouseEnter={() => setHoveredId('current')}
+          onMouseLeave={() => setHoveredId(null)}
+          style={{
+            position: 'relative',
+            width: '60px',
+            height: '60px',
+            borderRadius: '10px',
+            overflow: 'hidden',
+            border: '2.5px solid #111827',
+            boxShadow: '0 0 0 2px #111827',
+            cursor: 'default',
+            flexShrink: 0,
+            transition: 'transform 0.15s ease',
+          }}
+        >
+          {product.images?.[0] ? (
+            <img
+              src={`${IMAGE_BASE_URL}${product.images[0]}`}
+              alt={product.color || 'Current colour'}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          ) : (
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: product.color_hex || '#D1D5DB',
+              }}
+            />
+          )}
+          {/* Selected tick */}
+          <div style={{
+            position: 'absolute', bottom: '3px', right: '3px',
+            width: '16px', height: '16px', borderRadius: '50%',
+            backgroundColor: '#111827',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+              <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* ── Variant swatches ── */}
+        {product.color_variants?.map((variant) => {
+          const isHovered = hoveredId === variant.p_id;
+          return (
+            <div
+              key={variant.p_id}
+              title={variant.color || 'Variant'}
+              onClick={() => onVariantClick(variant.p_slug)}
+              onMouseEnter={() => setHoveredId(variant.p_id)}
+              onMouseLeave={() => setHoveredId(null)}
+              style={{
+                position: 'relative',
+                width: '60px',
+                height: '60px',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                border: isHovered ? '2.5px solid #6B7280' : '2px solid #E5E7EB',
+                cursor: 'pointer',
+                flexShrink: 0,
+                transform: isHovered ? 'scale(1.08)' : 'scale(1)',
+                transition: 'transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
+                boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.06)',
+              }}
+            >
+              {/* {variant.image ? (
+                <img
+                  src={variant.image}
+                  alt={variant.color || 'Colour variant'}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: variant.color_hex || '#D1D5DB',
+                  }}
+                />
+              )} */}
+               <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: variant.color_hex || '#D1D5DB',
+                  }}
+                />
+
+              {/* Hover overlay arrow */}
+              {isHovered && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  backgroundColor: 'rgba(0,0,0,0.18)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8H13M9 4L13 8L9 12" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Price hint for hovered variant */}
+      {/* {hoveredId && hoveredId !== 'current' && (() => {
+        const hv = product.color_variants?.find(v => v.p_id === hoveredId);
+        if (!hv) return null;
+        return (
+          <div style={{ marginTop: '8px', fontSize: '12px', color: '#6B7280', fontFamily: "'Merriweather', serif" }}>
+            {hv.color} — ₹{Number(hv.p_price).toFixed(2)}
+            {hv.discount_percentage > 0 && (
+              <span style={{ marginLeft: '6px', color: '#EF4444', fontWeight: '600' }}>
+                ({hv.discount_percentage}% off)
+              </span>
+            )}
+            <span style={{ marginLeft: '8px', color: '#9CA3AF', fontStyle: 'italic' }}>Click to view →</span>
+          </div>
+        );
+      })()} */}
+    </div>
+  );
+};
+
 // ─────────────────────────────────────────────────────────────────
 // Main ProductDetails Component
 // ─────────────────────────────────────────────────────────────────
@@ -370,6 +530,18 @@ const ProductDetails = () => {
     setMobileZoomImage('');
   };
 
+  // ── Handle variant navigation ──────────────────────────────────
+  const handleVariantClick = (slug) => {
+    // Reset state before navigating so the new product loads fresh
+    setProduct(null);
+    setSelectedSize('');
+    setSelectedColor('');
+    setQuantity(1);
+    setCurrentImageIndex(0);
+    setThumbsSwiper(null);
+    navigate(`/product/${slug}`);
+  };
+
   useEffect(() => {
     setCartItems(readCart());
     const onCartUpdated = () => setCartItems(readCart());
@@ -408,14 +580,12 @@ const ProductDetails = () => {
       }
     };
     fetchProductDetails();
-  }, [p_slug, navigate, token]);
+  }, [p_slug, token]);
 
   if (loading) {
     return (
       <div className="loading-spinner">
-
         <LoadingSpinner />
-
       </div>
     );
   }
@@ -423,7 +593,6 @@ const ProductDetails = () => {
   if (!product) return <div className="text-center text-muted py-5">Product not found.</div>;
 
   const sizes = product.size ? Object.keys(product.size) : [];
-  const colors = product.colors || [];
   const isOutOfStock = sizes.length === 0 || sizes.every((s) => product.size[s] === 0);
   const isSelectedSizeOutOfStock = selectedSize && product.size[selectedSize] === 0;
 
@@ -443,7 +612,7 @@ const ProductDetails = () => {
     discount_percentage: product.discount_percentage || 0,
     image: product.images?.[0] ? `${IMAGE_BASE_URL}${product.images[0]}` : '',
     size: selectedSize || (sizes.length > 0 ? sizes[0] : ''),
-    color: selectedColor,
+    color: selectedColor || product.color || '',
     quantity,
     product_code: product.product_code,
     fabric_type: product.fabric_type,
@@ -581,7 +750,11 @@ const ProductDetails = () => {
                   </div>
 
                   <div className="product-form text-start">
-                    {/* Size Selector */}
+
+                    {/* ── Color Variants ── */}
+                    <ColorVariants product={product} onVariantClick={handleVariantClick} />
+
+                    {/* ── Size Selector ── */}
                     {sizes.length > 0 && !isOutOfStock && (
                       <div className="size-selector mb-4">
                         <label className="form-label">Size</label>
@@ -611,19 +784,6 @@ const ProductDetails = () => {
                         <div className="alert alert-danger d-inline-flex align-items-center" role="alert">
                           <i className="bi bi-exclamation-triangle-fill me-2"></i>
                           <strong>Out of Stock</strong>
-                        </div>
-                      </div>
-                    )}
-
-                    {colors.length > 0 && (
-                      <div className="color-selector mb-4">
-                        <label className="form-label">Color</label>
-                        <div className="color-options">
-                          {colors.map((color) => (
-                            <button key={color} type="button" className={`btn btn-outline-dark me-2 ${selectedColor === color ? 'active' : ''}`} onClick={() => setSelectedColor(color)}>
-                              {color}
-                            </button>
-                          ))}
                         </div>
                       </div>
                     )}
